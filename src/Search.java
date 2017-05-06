@@ -171,9 +171,7 @@ public class Search {
             initialize();
             initialized = true;
         }
-
-        System.out.println("running!!");
-
+        
         List<Integer> moves = Scrambles.parseScramble(scramble);
 
         int orientation = 0;
