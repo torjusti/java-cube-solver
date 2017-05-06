@@ -51,7 +51,7 @@ public class Search {
         table.set(index >> 3, (table.get(index >> 3) & ~(0xF << getShift(index))) | (value << getShift(index)));
     }
 
-    private static List<Integer> computePruningTable(int size, List<List<Integer>> doMove, int maxDepth) {
+    private static List<Integer> computePruningTable(int size, List<List<Integer>> doMove) {
         List<Integer> table = new ArrayList<Integer>();
 
         for (int i = 0; i <= Math.ceil(size / 8); i += 1) {
@@ -60,7 +60,11 @@ public class Search {
 
         setPruningValue(table, 0, 0);
 
-        for (int depth = 0; depth <= maxDepth; depth += 1) {
+        int depth = 0;
+
+        while (true) {
+            int count = 0;
+
             for (int index = 0; index < size; index += 1) {
                 if (getPruningValue(table, index) != depth) {
                     continue;
@@ -72,10 +76,19 @@ public class Search {
 
                         if (getPruningValue(table, position) == 0xF) {
                             setPruningValue(table, position, depth);
+                            count += 1;
                         }
                     }
                 }
             }
+
+            // We assume the table is finished when we go for an entire depth
+            // without adding any values to the pruning table.
+            if (count == 0) {
+                break;
+            }
+
+            depth += 1;
         }
 
         return table;
@@ -85,8 +98,8 @@ public class Search {
         orientationMoves = createMoveTable(2048, Coordinates::orientationMove);
         permutationMoves = createMoveTable(NUM_PERMUTATIONS, (index, move) -> Coordinates.permutationMove(index, move, affectedPermutationPieces));
 
-        pruneOrientation = computePruningTable(2048, orientationMoves, 6);
-        prunePermutation = computePruningTable(NUM_PERMUTATIONS, permutationMoves, 3);
+        pruneOrientation = computePruningTable(2048, orientationMoves);
+        prunePermutation = computePruningTable(NUM_PERMUTATIONS, permutationMoves);
     }
 
     private boolean search(int orientation, int permutation, int depth, int lastMove, List<Integer> solution) {
