@@ -9,8 +9,8 @@ public class Search {
     private List<List<Integer>> orientationMoves;
     private List<List<Integer>> permutationMoves;
 
-    private List<Integer> pruneOrientation;
-    private List<Integer> prunePermutation;
+    private byte[] pruneOrientation;
+    private byte[] prunePermutation;
 
     private List<Integer> affectedPermutationPieces;
     private int NUM_PERMUTATIONS;
@@ -39,56 +39,51 @@ public class Search {
         return table;
     }
 
-    private static int getShift(int index) {
-        return (index % 8) << 2;
+    static void setPruning(byte[] table, int index, byte value) {
+        if ((index & 1) == 0) {
+            table[index / 2] &= 0xf0 | value;
+        } else {
+            table[index / 2] &= 0x0f | (value << 4);
+        }
     }
 
-    private static int getPruningValue(List<Integer> table, int index) {
-        return table.get(index >> 3) & (0xF << getShift(index)) >>> getShift(index);
+    static byte getPruning(byte[] table, int index) {
+        if ((index & 1) == 0) {
+            return (byte)(table[index / 2] & 0x0f);
+        } else {
+            return (byte)((table[index / 2] & 0xf0) >>> 4);
+        }
     }
 
-    private static void setPruningValue(List<Integer> table, int index, int value) {
-        table.set(index >> 3, (table.get(index >> 3) & ~(0xF << getShift(index))) | (value << getShift(index)));
-    }
+    private static byte[] computePruningTable(int size, List<List<Integer>> doMove) {
+        byte[] table = new byte[size /  2];
 
-    private static List<Integer> computePruningTable(int size, List<List<Integer>> doMove) {
-        List<Integer> table = new ArrayList<Integer>();
-
-        for (int i = 0; i <= Math.ceil(size / 8); i += 1) {
-            table.add(0xF);
+        for (int i = 0; i < size / 2; i += 1) {
+            table[i] = -1;
         }
 
-        setPruningValue(table, 0, 0);
+        setPruning(table, 0, (byte) 0);
 
+        int done = 1;
         int depth = 0;
 
-        while (true) {
-            int count = 0;
-
-            for (int index = 0; index < size; index += 1) {
-                if (getPruningValue(table, index) != depth) {
+        while (depth != size) {
+            for (int index = 0; index < size; index++) {
+                if (getPruning(table, index) != depth) {
                     continue;
                 }
 
-                for (int move = 0; move < 6; move += 1) {
-                    for (int pow = 0; pow < 3; pow += 1) {
-                        int position = doMove.get(index).get(move * 3 + pow);
+                for (int move = 0; move < 18; move++) {
+                    int position = doMove.get(index).get(move);
 
-                        if (getPruningValue(table, position) == 0xF) {
-                            setPruningValue(table, position, depth);
-                            count += 1;
-                        }
+                    if (getPruning(table, position) == 0x0f) {
+                        setPruning(table, position, (byte) depth);
+                        done++;
                     }
                 }
             }
 
-            // We assume the table is finished when we go for an entire depth
-            // without adding any values to the pruning table.
-            if (count == 0) {
-                break;
-            }
-
-            depth += 1;
+            depth++;
         }
 
         return table;
@@ -107,7 +102,7 @@ public class Search {
             return permutation == DEFAULT_PERMUTATION && orientation == 0;
         }
 
-        if (getPruningValue(pruneOrientation, orientation) > depth || getPruningValue(prunePermutation, permutation) > depth) {
+        if (getPruning(pruneOrientation, orientation) > depth || getPruning(prunePermutation, permutation) > depth) {
             return false;
         }
 
