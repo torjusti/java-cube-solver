@@ -60,14 +60,14 @@ public class Search {
         }
     }
 
-    private static byte[] computePruningTable(int size, List<List<Integer>> doMove) {
+    private static byte[] computePruningTable(int size, List<List<Integer>> doMove, int defaultPosition, List<Integer> solvedIndexes) {
         byte[] table = new byte[size /  2];
 
         for (int i = 0; i < size / 2; i += 1) {
             table[i] = -1;
         }
 
-        setPruning(table, 0, (byte) 0);
+        setPruning(table, defaultPosition, (byte) 0);
 
         int done = 1;
         int depth = 0;
@@ -82,7 +82,12 @@ public class Search {
                     int position = doMove.get(index).get(move);
 
                     if (getPruning(table, position) == 0x0f) {
-                        setPruning(table, position, (byte) depth);
+                        if (solvedIndexes != null && Collections.binarySearch(solvedIndexes, position) >= 0) {
+                            setPruning(table, position, (byte) 0);
+                        } else {
+                            setPruning(table, position, (byte) depth);
+                        }
+
                         done++;
                     }
                 }
@@ -117,12 +122,12 @@ public class Search {
         orientationMoves = createMoveTable(2048, Coordinates::orientationMove);
         permutationMoves = createMoveTable(NUM_PERMUTATIONS, (index, move) -> Coordinates.permutationMove(index, move, affectedPermutationPieces));
 
-        pruneOrientation = computePruningTable(2048, orientationMoves);
-        prunePermutation = computePruningTable(NUM_PERMUTATIONS, permutationMoves);
-
         if (affectedOrientationPieces != null) {
             populateCorrectOrientations();
         }
+
+        pruneOrientation = computePruningTable(2048, orientationMoves, 0, correctOrientations);
+        prunePermutation = computePruningTable(NUM_PERMUTATIONS, permutationMoves, DEFAULT_PERMUTATION, null);
     }
 
     private boolean search(int orientation, int permutation, int depth, int lastMove, List<Integer> solution) {
@@ -138,7 +143,7 @@ public class Search {
             return false;
         }
 
-        if (affectedOrientationPieces == null && getPruning(pruneOrientation, orientation) > depth) {
+        if (getPruning(pruneOrientation, orientation) > depth) {
             return false;
         }
 
@@ -166,6 +171,8 @@ public class Search {
             initialize();
             initialized = true;
         }
+
+        System.out.println("running!!");
 
         List<Integer> moves = Scrambles.parseScramble(scramble);
 
