@@ -118,7 +118,13 @@ public class Search {
         }
     }
 
-    private void initialize() {
+    public void initialize() {
+        if (this.initialized) {
+            return;
+        }
+
+        this.initialized = true;
+
         orientationMoves = createMoveTable(2048, Coordinates::orientationMove);
         permutationMoves = createMoveTable(NUM_PERMUTATIONS, (index, move) -> Coordinates.permutationMove(index, move, affectedPermutationPieces));
 
@@ -132,18 +138,22 @@ public class Search {
 
     private boolean search(int orientation, int permutation, int depth, int lastMove, List<Integer> solution) {
         if (depth == 0) {
-            if (affectedOrientationPieces != null) {
-                return permutation == DEFAULT_PERMUTATION && Collections.binarySearch(correctOrientations, orientation) >= 0;
+            if (permutation != DEFAULT_PERMUTATION) {
+                return false;
             }
 
-            return permutation == DEFAULT_PERMUTATION && orientation == 0;
-        }
+            if (affectedOrientationPieces != null) {
+                return Collections.binarySearch(correctOrientations, orientation) >= 0;
+            }
 
-        if (getPruning(prunePermutation, permutation) > depth) {
-            return false;
+            return orientation == 0;
         }
 
         if (getPruning(pruneOrientation, orientation) > depth) {
+            return false;
+        }
+
+        if (getPruning(prunePermutation, permutation) > depth) {
             return false;
         }
 
@@ -167,11 +177,8 @@ public class Search {
     }
 
     public String solve(String scramble) {
-        if (!initialized) {
-            initialize();
-            initialized = true;
-        }
-        
+        initialize();
+
         List<Integer> moves = Scrambles.parseScramble(scramble);
 
         int orientation = 0;
@@ -184,7 +191,8 @@ public class Search {
 
         List<Integer> solution = new ArrayList<Integer>();
 
-        for (int depth = 0; depth < 9; depth += 1) {
+        // Every cube is solvable with a depth of 20. However, such depths are too slow to ever end up solved.
+        for (int depth = 0; depth < 20; depth += 1) {
             if (search(orientation, permutation, depth, -1, solution)) {
                 break;
             }
