@@ -29,16 +29,7 @@ public class Search {
         for (int i = 0; i < 2048; i++) {
             List<Integer> orientation = Coordinates.getOrientationFromIndex(i);
 
-            boolean allSolved = true;
-
-            for (Integer piece : affectedOrientationPieces) {
-                if (orientation.get(piece) != 0) {
-                    allSolved = false;
-                    break;
-                }
-            }
-
-            if (allSolved) {
+            if (affectedOrientationPieces.stream().allMatch(piece -> orientation.get(piece) != 0)) {
                 correctOrientations.add(i);
             }
         }
@@ -75,11 +66,7 @@ public class Search {
             return orientation == 0;
         }
 
-        if (pruneOrientation.getPruningValue(orientation) > depth) {
-            return false;
-        }
-
-        if (prunePermutation.getPruningValue(permutation) > depth) {
+        if (pruneOrientation.getPruningValue(orientation) > depth || prunePermutation.getPruningValue(permutation) > depth) {
             return false;
         }
 

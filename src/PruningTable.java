@@ -1,4 +1,6 @@
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 
 public class PruningTable {
     private byte[] table;
@@ -53,7 +55,7 @@ public class PruningTable {
                     int position = moveTable.doMove(index, move);
 
                     if (getPruningValue(position) == 0x0f) {
-                        setPruningValue(position, (byte) depth);
+                        setPruningValue(position, (byte)(depth + 1));
                         done++;
                     }
                 }
