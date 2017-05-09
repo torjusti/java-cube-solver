@@ -3,11 +3,11 @@ import java.util.*;
 public class Search {
     private boolean initialized = false;
 
-    private List<List<Integer>> orientationMoves;
-    private List<List<Integer>> permutationMoves;
+    private MoveTable orientationMoves;
+    private MoveTable permutationMoves;
 
-    private byte[] pruneOrientation;
-    private byte[] prunePermutation;
+    private PruningTable pruneOrientation;
+    private PruningTable prunePermutation;
 
     private List<Integer> affectedPermutationPieces;
     private List<Integer> affectedOrientationPieces;
@@ -23,82 +23,6 @@ public class Search {
 
         NUM_PERMUTATIONS = Tools.factorial(12) / Tools.factorial(12 - affectedPermutationPieces.size());
         DEFAULT_PERMUTATION = Coordinates.getIndexFromPermutation(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), affectedPermutationPieces);
-    }
-
-    private static List<List<Integer>> createMoveTable(int size, CoordinateMove doMove) {
-        List<List<Integer>> table = new ArrayList<List<Integer>>();
-
-        for (int i = 0; i < size; i += 1) {
-            table.add(new ArrayList<Integer>());
-
-            for (int move = 0; move < 6; move += 1) {
-                for (int pow = 0; pow < 3; pow += 1) {
-                    table.get(i).add(doMove.apply(i, move * 3 + pow));
-                }
-            }
-        }
-
-        return table;
-    }
-
-    static void setPruning(byte[] table, int index, byte value) {
-        if ((index & 1) == 0) {
-            table[index / 2] &= 0xf0 | value;
-        } else {
-            table[index / 2] &= 0x0f | (value << 4);
-        }
-    }
-
-    static byte getPruning(byte[] table, int index) {
-        if ((index & 1) == 0) {
-            return (byte)(table[index / 2] & 0x0f);
-        } else {
-            return (byte)((table[index / 2] & 0xf0) >>> 4);
-        }
-    }
-
-    private static byte[] computePruningTable(int size, List<List<Integer>> doMove, int defaultPosition) {
-        Set<Integer> solvedIndexes = new HashSet<Integer>();
-        solvedIndexes.add(defaultPosition);
-        return computePruningTable(size, doMove, solvedIndexes);
-    }
-
-    private static byte[] computePruningTable(int size, List<List<Integer>> doMove, Collection<Integer> solvedIndexes) {
-        byte[] table = new byte[size /  2];
-
-        for (int i = 0; i < size / 2; i += 1) {
-            table[i] = -1;
-        }
-
-        int done = 0;
-
-        for (Integer index : solvedIndexes) {
-            setPruning(table, index, (byte) 0);
-            done++;
-        }
-
-        int depth = 0;
-
-        while (depth != size) {
-            for (int index = 0; index < size; index++) {
-                if (getPruning(table, index) != depth) {
-                    continue;
-                }
-
-                for (int move = 0; move < 18; move++) {
-                    int position = doMove.get(index).get(move);
-
-                    if (getPruning(table, position) == 0x0f) {
-                        setPruning(table, position, (byte) depth);
-                        done++;
-                    }
-                }
-            }
-
-            depth++;
-        }
-
-        return table;
     }
 
     private void populateCorrectOrientations() {
@@ -127,15 +51,15 @@ public class Search {
 
         this.initialized = true;
 
-        orientationMoves = createMoveTable(2048, Coordinates::orientationMove);
-        permutationMoves = createMoveTable(NUM_PERMUTATIONS, (index, move) -> Coordinates.permutationMove(index, move, affectedPermutationPieces));
+        orientationMoves = new MoveTable(2048, Coordinates::orientationMove);
+        permutationMoves = new MoveTable(NUM_PERMUTATIONS, (index, move) -> Coordinates.permutationMove(index, move, affectedPermutationPieces));
 
         if (affectedOrientationPieces != null) {
             populateCorrectOrientations();
         }
 
-        pruneOrientation = computePruningTable(2048, orientationMoves, correctOrientations);
-        prunePermutation = computePruningTable(NUM_PERMUTATIONS, permutationMoves, DEFAULT_PERMUTATION);
+        pruneOrientation = new PruningTable(2048, orientationMoves, correctOrientations);
+        prunePermutation = new PruningTable(NUM_PERMUTATIONS, permutationMoves, DEFAULT_PERMUTATION);
     }
 
     private boolean search(int orientation, int permutation, int depth, int lastMove, List<Integer> solution) {
@@ -151,19 +75,19 @@ public class Search {
             return orientation == 0;
         }
 
-        if (getPruning(pruneOrientation, orientation) > depth) {
+        if (pruneOrientation.getPruningValue(orientation) > depth) {
             return false;
         }
 
-        if (getPruning(prunePermutation, permutation) > depth) {
+        if (prunePermutation.getPruningValue(permutation) > depth) {
             return false;
         }
 
         for (int move = 0; move < 6; move += 1) {
             if (move != lastMove && move != lastMove - 3) {
                 for (int pow = 0; pow < 3; pow += 1) {
-                    int innerOrientation = orientationMoves.get(orientation).get(move * 3 + pow);
-                    int innerPermutation = permutationMoves.get(permutation).get(move * 3 + pow);
+                    int innerOrientation = orientationMoves.doMove(orientation, move * 3 + pow);
+                    int innerPermutation = permutationMoves.doMove(permutation, move * 3 + pow);
 
                     boolean result = search(innerOrientation, innerPermutation, depth - 1, move, solution);
 
@@ -187,8 +111,8 @@ public class Search {
         int permutation = DEFAULT_PERMUTATION;
 
         for (Integer move : moves) {
-            orientation = orientationMoves.get(orientation).get(move);
-            permutation = permutationMoves.get(permutation).get(move);
+            orientation = orientationMoves.doMove(orientation, move);
+            permutation = permutationMoves.doMove(permutation, move);
         }
 
         List<Integer> solution = new ArrayList<Integer>();
