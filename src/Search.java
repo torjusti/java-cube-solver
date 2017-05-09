@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class Search {
     private boolean initialized = false;
@@ -15,7 +12,7 @@ public class Search {
     private List<Integer> affectedPermutationPieces;
     private List<Integer> affectedOrientationPieces;
 
-    private List<Integer> correctOrientations = new ArrayList<Integer>();
+    private Set<Integer> correctOrientations = new HashSet<Integer>();
 
     private int NUM_PERMUTATIONS;
     private int DEFAULT_PERMUTATION;
@@ -60,16 +57,26 @@ public class Search {
         }
     }
 
-    private static byte[] computePruningTable(int size, List<List<Integer>> doMove, int defaultPosition, List<Integer> solvedIndexes) {
+    private static byte[] computePruningTable(int size, List<List<Integer>> doMove, int defaultPosition) {
+        Set<Integer> solvedIndexes = new HashSet<Integer>();
+        solvedIndexes.add(defaultPosition);
+        return computePruningTable(size, doMove, solvedIndexes);
+    }
+
+    private static byte[] computePruningTable(int size, List<List<Integer>> doMove, Collection<Integer> solvedIndexes) {
         byte[] table = new byte[size /  2];
 
         for (int i = 0; i < size / 2; i += 1) {
             table[i] = -1;
         }
 
-        setPruning(table, defaultPosition, (byte) 0);
+        int done = 0;
 
-        int done = 1;
+        for (Integer index : solvedIndexes) {
+            setPruning(table, index, (byte) 0);
+            done++;
+        }
+
         int depth = 0;
 
         while (depth != size) {
@@ -82,12 +89,7 @@ public class Search {
                     int position = doMove.get(index).get(move);
 
                     if (getPruning(table, position) == 0x0f) {
-                        if (solvedIndexes != null && Collections.binarySearch(solvedIndexes, position) >= 0) {
-                            setPruning(table, position, (byte) 0);
-                        } else {
-                            setPruning(table, position, (byte) depth);
-                        }
-
+                        setPruning(table, position, (byte) depth);
                         done++;
                     }
                 }
@@ -132,8 +134,8 @@ public class Search {
             populateCorrectOrientations();
         }
 
-        pruneOrientation = computePruningTable(2048, orientationMoves, 0, correctOrientations);
-        prunePermutation = computePruningTable(NUM_PERMUTATIONS, permutationMoves, DEFAULT_PERMUTATION, null);
+        pruneOrientation = computePruningTable(2048, orientationMoves, correctOrientations);
+        prunePermutation = computePruningTable(NUM_PERMUTATIONS, permutationMoves, DEFAULT_PERMUTATION);
     }
 
     private boolean search(int orientation, int permutation, int depth, int lastMove, List<Integer> solution) {
@@ -143,7 +145,7 @@ public class Search {
             }
 
             if (affectedOrientationPieces != null) {
-                return Collections.binarySearch(correctOrientations, orientation) >= 0;
+                return correctOrientations.contains(orientation);
             }
 
             return orientation == 0;

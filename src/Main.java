@@ -3,8 +3,8 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        Search EOLineSolver = new Search(Arrays.asList(5, 7),  null);
-        Search EOCrossSolver = new Search(Arrays.asList(4, 5, 6, 7),  null);
+        Search EOLineSolver = new Search(Arrays.asList(5, 7),  Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11));
+        Search EOCrossSolver = new Search(Arrays.asList(4, 5, 6, 7), Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11));
         Search CrossSolver = new Search(Arrays.asList(4, 5, 6, 7), Arrays.asList(4, 5, 6, 7));
 
         System.out.println("Initializing solvers");
@@ -33,18 +33,18 @@ public class Main {
             System.out.println(EOLineSolver.solve(scramble) + ", completed in " + String.valueOf(System.nanoTime() - start));
         }
 
-        System.out.println("Solving EOCross");
-
-        for (String scramble : scrambles) {
-            long start = System.nanoTime();
-            System.out.println(EOCrossSolver.solve(scramble) + ", completed in " + String.valueOf(System.nanoTime() - start));
-        }
-
         System.out.println("Solving Cross");
 
         for (String scramble : scrambles) {
             long start = System.nanoTime();
             System.out.println(CrossSolver.solve(scramble) + ", completed in " + String.valueOf(System.nanoTime() - start));
+        }
+
+        System.out.println("Solving EOCross");
+
+        for (String scramble : scrambles) {
+            long start = System.nanoTime();
+            System.out.println(EOCrossSolver.solve(scramble) + ", completed in " + String.valueOf(System.nanoTime() - start));
         }
     }
 }
