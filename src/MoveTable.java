@@ -1,6 +1,10 @@
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A move table is a two-dimensional array where the first index is the original index, and the
+ * second index is the move. The value given by the two indexes is the new index after performing the move.
+ */
 public class MoveTable {
     private List<List<Integer>> table;
 

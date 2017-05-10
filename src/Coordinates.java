@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Coordinates {
+    /**
+     * Takes an index as computed by getIndexFromOrientation, and returns the original orientation vector.
+     */
     public static List<Integer> getOrientationFromIndex(int index) {
         List<Integer> orientation = Arrays.asList(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
@@ -16,11 +19,18 @@ public class Coordinates {
             index /= 2;
         }
 
+        // As the number of flips must be even for the cube to be solvable,
+        // the flip of the last piece is uniquely determined by the flip of the other 11 edge pieces.
         orientation.set(11, (2 - parity % 2) % 2);
 
         return orientation;
     }
 
+    /**
+     * Computes an unique index in the range from 0 to, up to 2047 (2 ^ 11 - 1).
+     * Thus, this function is a bijection, however there is no guaranteed logical
+     * connection between the indexes and the orientation.
+     */
     public static int getIndexFromOrientation(List<Integer> orientation) {
         int sum = 0;
 
@@ -31,6 +41,9 @@ public class Coordinates {
         return sum;
     }
 
+    /**
+     * Retrieves the unique permutation of the affected pieces in a list of length 12 corresponding to the given index.
+     */
     public static List<Integer> getPermutationFromIndex(int index, List<Integer> affectedPieces) {
         List<Integer> permutation = Arrays.asList(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         List<Integer> indexes = new ArrayList<Integer>();
@@ -74,6 +87,13 @@ public class Coordinates {
         return permutation;
     }
 
+    /**
+     * This function is a bijection which will map the given permutation to an unique number.
+     * The range of the numbers depends on the affected pieces - the number will be an unique
+     * number in the range from 0 up but not unto the number of ways the affected pieces
+     * may be permuted in a list of length 12, given by (12!)/(12-n)!, where n is the number
+     * of affected pieces.
+     */
     public static int getIndexFromPermutation(List<Integer> permutation, List<Integer> affectedPieces) {
         List<Integer> indexes = affectedPieces.stream().map(permutation::indexOf).collect(Collectors.toList());
 
@@ -98,11 +118,17 @@ public class Coordinates {
         return previous;
     }
 
+    /**
+     * Returns the new orientation index after performing a move.
+     */
     public static int orientationMove(int index, int move) {
         List<Integer> orientation = getOrientationFromIndex(index);
         return getIndexFromOrientation(CubieCube.orientationMove(orientation, move));
     }
 
+    /**
+     * Returns the new permutation index after performing a move.
+     */
     public static int permutationMove(int index, int move, List<Integer> affectedPieces) {
         List<Integer> permutation = getPermutationFromIndex(index, affectedPieces);
         return getIndexFromPermutation(CubieCube.permutationMove(permutation, move), affectedPieces);

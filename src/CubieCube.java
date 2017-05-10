@@ -21,6 +21,12 @@ public class CubieCube {
         moves.add(Arrays.asList(5, 4, 7, 6)); // D
     }
 
+    /**
+     * Shuffles the items in a list to the right by one, such that
+     * element A goes to B, B to C, C to D and D back to A.
+     * This helps us compute the result cube after a move is applied,
+     * because all moves permute pieces to the right by one in a circular fashion.
+     */
     static List<Integer> rotateRight(List<Integer> edges, int a, int b, int c, int d) {
         List<Integer> updatedPieces = new ArrayList<>(edges);
         updatedPieces.set(b, edges.get(a));
@@ -30,6 +36,9 @@ public class CubieCube {
         return updatedPieces;
     }
 
+    /**
+     * Returns the updated permutation vector after applying a move.
+     */
     public static List<Integer> permutationMove(List<Integer> edges, int moveIndex) {
         List<Integer> move = moves.get(moveIndex / 3);
         int pow = moveIndex % 3;
@@ -43,6 +52,9 @@ public class CubieCube {
         return permuted;
     }
 
+    /**
+     * Returns the updated permutation vector after applying a move.
+     */
     public static List<Integer> orientationMove(List<Integer> edges, int moveIndex) {
         List<Integer> move = moves.get(moveIndex / 3);
         int pow = moveIndex % 3;
