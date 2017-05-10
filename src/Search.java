@@ -29,7 +29,7 @@ public class Search {
         for (int i = 0; i < 2048; i++) {
             List<Integer> orientation = Coordinates.getOrientationFromIndex(i);
 
-            if (affectedOrientationPieces.stream().allMatch(piece -> orientation.get(piece) != 0)) {
+            if (affectedOrientationPieces.stream().allMatch(piece -> orientation.get(piece) == 0)) {
                 correctOrientations.add(i);
             }
         }
