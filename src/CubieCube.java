@@ -22,17 +22,19 @@ public class CubieCube {
     }
 
     /**
-     * Shuffles the items in a list to the right by one, such that
-     * element A goes to B, B to C, C to D and D back to A.
-     * This helps us compute the result cube after a move is applied,
-     * because all moves permute pieces to the right by one in a circular fashion.
+     * Shuffles the items in a list to the right by one.
+     * This helps us compute the result cube after a move is applied, as
+     * all moves permute pieces to the right by one in a circular fashion.
      */
-    static List<Integer> rotateRight(List<Integer> edges, int a, int b, int c, int d) {
+    static List<Integer> rotateRight(List<Integer> edges, int... elems) {
         List<Integer> updatedPieces = new ArrayList<>(edges);
-        updatedPieces.set(b, edges.get(a));
-        updatedPieces.set(c, edges.get(b));
-        updatedPieces.set(d, edges.get(c));
-        updatedPieces.set(a, edges.get(d));
+
+        updatedPieces.set(elems[0], edges.get(elems[elems.length - 1]));
+
+        for (int i = 1; i < elems.length; i++) {
+            updatedPieces.set(elems[i], edges.get(elems[i - 1]));
+        }
+        
         return updatedPieces;
     }
 
