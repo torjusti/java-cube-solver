@@ -34,7 +34,7 @@ public class CubieCube {
         for (int i = 1; i < elems.length; i++) {
             updatedPieces.set(elems[i], edges.get(elems[i - 1]));
         }
-        
+
         return updatedPieces;
     }
 

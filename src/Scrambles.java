@@ -2,10 +2,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Scrambles {
+    // Returns true if we are able to parse this sequence, false if not.
+    public static boolean validateSequence(String sequence) {
+        if (sequence.trim().isEmpty()) {
+            return false;
+        }
+
+        for (String part : sequence.trim().split( " ")) {
+            if (part.trim().isEmpty()) {
+                continue;
+            }
+
+            if (!part.matches("^[FRUBLD]{1}[2']?$")) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public static List<Integer> parseScramble(String scramble) {
         List<Integer> moves = new ArrayList<>();
 
         for (String move : scramble.trim().split(" ")) {
+            if (move.trim().isEmpty()) {
+                continue;
+            }
+
             List<Integer> movePair = new ArrayList<Integer>();
 
             int moveNum = "FRUBLD".indexOf(move.charAt(0));
