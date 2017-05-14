@@ -79,6 +79,7 @@ public class Search {
 
         if (affectedCornerOrientationPieces != null) {
             cornerOrientationMoves = new MoveTable(2187, Coordinates::cornerOrientationMove);
+
         }
 
         if (affectedCornerPermutationPieces != null) {
