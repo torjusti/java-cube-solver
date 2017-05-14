@@ -30,9 +30,9 @@ public class PruningTable {
     }
 
     private void computePruningTable(int size, MoveTable moveTable, Collection<Integer> solvedIndexes) {
-        table = new byte[size /  2];
+        table = new byte[size /  2 + 1];
 
-        for (int i = 0; i < size / 2; i += 1) {
+        for (int i = 0; i <= size / 2; i += 1) {
             table[i] = -1;
         }
 

@@ -12,13 +12,15 @@ public class Main {
 
         long initializationStart = System.currentTimeMillis();
 
-        Search EOLineSolver = new Search(Arrays.asList(5, 7),  Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11));
-        Search EOCrossSolver = new Search(Arrays.asList(4, 5, 6, 7), Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11));
-        Search CrossSolver = new Search(Arrays.asList(4, 5, 6, 7), Arrays.asList(4, 5, 6, 7));
+        Search EOLineSolver = new Search(Arrays.asList(5, 7),  Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), null, null);
+        Search EOCrossSolver = new Search(Arrays.asList(4, 5, 6, 7), Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), null, null);
+        Search CrossSolver = new Search(Arrays.asList(4, 5, 6, 7), Arrays.asList(4, 5, 6, 7), null, null);
+        Search FRXCrossSolver = new Search(Arrays.asList(4, 5, 6, 7, 8), Arrays.asList(4, 5, 6, 7, 8), Arrays.asList(4), Arrays.asList(4));
 
         EOLineSolver.initialize();
         EOCrossSolver.initialize();
         CrossSolver.initialize();
+        FRXCrossSolver.initialize();
 
         System.out.println("Solvers initialized in " + (System.currentTimeMillis() - initializationStart) + " ms");
 
@@ -34,6 +36,7 @@ public class Main {
                 timeSolve(EOLineSolver, scramble, "EOLine");
                 timeSolve(EOCrossSolver, scramble, "EOCross");
                 timeSolve(CrossSolver, scramble, "Cross");
+                timeSolve(FRXCrossSolver, scramble, "XCross");
             }
         } while (in.hasNext());
 
