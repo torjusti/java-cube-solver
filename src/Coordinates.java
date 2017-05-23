@@ -70,17 +70,16 @@ public class Coordinates {
             return permutation;
         }
 
+        int factor = 1 + size - affectedPieces.size();
+
         int base = size;
-        int factor = size;
 
         for (int i = affectedPieces.size() - 2; i >= 0; i--) {
-            factor -= 1;
-            base *= factor;
+            base *= factor + i;
         }
 
         for (int i = 0; i < affectedPieces.size() - 1; i++) {
-            base /= factor;
-            factor += 1;
+            base /= factor + i;
 
             int value = index / base;
             int rest = index % base;
@@ -131,7 +130,6 @@ public class Coordinates {
         }
 
         int base = permutation.size();
-        int factor = permutation.size();
 
         int previous = indexes.get(indexes.size() - 1);
 
@@ -144,8 +142,7 @@ public class Coordinates {
 
             previous += base * indexes.get(i);
 
-            factor -= 1;
-            base *= factor;
+            base *= 1 + permutation.size() - indexes.size() + i;
         }
 
         return previous;
