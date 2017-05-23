@@ -42,11 +42,8 @@ public class PruningTable {
             table[i] = -1;
         }
 
-        int done = 0;
-
         for (Integer index : solvedIndexes) {
             setPruningValue(index, (byte) 0);
-            done++;
         }
 
         int depth = 0;
@@ -62,7 +59,6 @@ public class PruningTable {
 
                     if (getPruningValue(position) == 0x0f) {
                         setPruningValue(position, (byte)(depth + 1));
-                        done++;
                     }
                 }
             }
